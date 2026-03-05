@@ -156,7 +156,8 @@ def search(keyword: str, search_type: str, page: int, count: int, as_json: bool)
             click.echo(json.dumps(results, ensure_ascii=False, indent=2))
             return
 
-        if not results:
+        display_results = [v for v in results if v.get("bvid")]
+        if not display_results:
             common.console.print(f"[yellow]未找到与 '{keyword}' 相关的视频[/yellow]")
             return
 
@@ -168,7 +169,7 @@ def search(keyword: str, search_type: str, page: int, count: int, as_json: bool)
         table.add_column("播放", width=10, justify="right")
         table.add_column("时长", width=8)
 
-        for i, v in enumerate(results[:count], 1):
+        for i, v in enumerate(display_results[:count], 1):
             title = re.sub(r'<[^>]+>', '', v.get("title", ""))[:40]
             table.add_row(
                 str(i),

@@ -72,7 +72,7 @@ async def test_get_video_comments_falls_back_to_direct_when_sdk_empty():
 
 
 @pytest.mark.asyncio
-async def test_get_video_comments_returns_sdk_result_if_direct_fallback_fails():
+async def test_get_video_comments_raises_if_sdk_empty_and_direct_fallback_fails():
     sdk_result = {"replies": []}
     with patch("bili_cli.client.video.Video") as MockVideo, \
          patch("bili_cli.client.comment.get_comments", new_callable=AsyncMock, return_value=sdk_result), \
@@ -82,8 +82,8 @@ async def test_get_video_comments_returns_sdk_result_if_direct_fallback_fails():
              side_effect=NetworkException(-1, "timeout"),
          ):
         MockVideo.return_value.get_info = AsyncMock(return_value={"aid": 789})
-        result = await client.get_video_comments("BV1test123")
-        assert result == sdk_result
+        with pytest.raises(NetworkError):
+            await client.get_video_comments("BV1test123")
 
 
 @pytest.mark.asyncio
@@ -331,6 +331,29 @@ async def test_get_rank_videos_week_mode():
     with patch("bili_cli.client.rank.get_rank", new_callable=AsyncMock, return_value=mock_data) as mock_rank:
         await client.get_rank_videos(day=7)
         mock_rank.assert_called_once_with(day=client.rank.RankDayType.WEEK)
+
+
+@pytest.mark.asyncio
+async def test_get_favorite_videos_calls_api(mock_credential):
+    mock_data = {"medias": [{"bvid": "BV1fav"}], "has_more": False}
+    with patch(
+        "bili_cli.client.favorite_list.get_video_favorite_list_content",
+        new_callable=AsyncMock,
+        return_value=mock_data,
+    ) as mock_get:
+        result = await client.get_favorite_videos(fav_id=100, credential=mock_credential, page=2)
+        assert result == mock_data
+        mock_get.assert_awaited_once_with(media_id=100, page=2, credential=mock_credential)
+
+
+@pytest.mark.asyncio
+async def test_get_followings_calls_user_api(mock_credential):
+    mock_data = {"list": [{"mid": 1}], "total": 1}
+    with patch("bili_cli.client.user.User") as MockUser:
+        MockUser.return_value.get_followings = AsyncMock(return_value=mock_data)
+        result = await client.get_followings(uid=123, pn=3, ps=30, credential=mock_credential)
+        assert result == mock_data
+        MockUser.return_value.get_followings.assert_awaited_once_with(pn=3, ps=30)
 
 
 def test_extract_bvid_invalid_type():

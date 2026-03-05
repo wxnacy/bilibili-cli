@@ -47,6 +47,13 @@ def test_login_runtime_error(runner):
         assert "二维码已过期" in result.output
 
 
+def test_login_unexpected_error_shows_friendly_message(runner):
+    with patch("bili_cli.commands.common.qr_login", new_callable=AsyncMock, side_effect=Exception("boom")):
+        result = runner.invoke(cli, ["login"])
+        assert result.exit_code != 0
+        assert "登录失败: boom" in result.output
+
+
 def test_whoami_not_logged_in(runner):
     with patch("bili_cli.commands.common.get_credential", return_value=None):
         result = runner.invoke(cli, ["whoami"])
@@ -241,6 +248,18 @@ def test_search_video(runner):
         assert "BV1found" in result.output
 
 
+def test_search_video_filters_items_without_bvid(runner):
+    mock_results = [
+        {"bvid": "", "title": "No BV", "author": "UP", "play": 1, "duration": "1:00"},
+        {"bvid": "BV1found", "title": "Found Video", "author": "UP", "play": 5000, "duration": "10:30"},
+    ]
+    with patch("bili_cli.client.search_video", new_callable=AsyncMock, return_value=mock_results):
+        result = runner.invoke(cli, ["search", "test", "--type", "video"])
+        assert result.exit_code == 0
+        assert "BV1found" in result.output
+        assert "No BV" not in result.output
+
+
 def test_search_forwards_page_for_user(runner):
     with patch("bili_cli.client.search_user", new_callable=AsyncMock, return_value=[]) as mock_search_user:
         result = runner.invoke(cli, ["search", "test", "--page", "3"])
@@ -340,6 +359,31 @@ def test_user_by_name_with_missing_uid_returns_nonzero(runner):
 # ===== Collections =====
 
 
+def test_favorites_list_success(runner):
+    mock_cred = MagicMock()
+    favs = [{"id": 100, "title": "默认收藏夹", "media_count": 8}]
+    with patch("bili_cli.commands.common.get_credential", return_value=mock_cred), \
+         patch("bili_cli.client.get_favorite_list", new_callable=AsyncMock, return_value=favs):
+        result = runner.invoke(cli, ["favorites"])
+        assert result.exit_code == 0
+        assert "默认收藏夹" in result.output
+        assert "100" in result.output
+
+
+def test_favorites_detail_success(runner):
+    mock_cred = MagicMock()
+    data = {
+        "medias": [{"bvid": "BV1fav", "title": "Fav Video", "upper": {"name": "FavUP"}, "duration": 120}],
+        "has_more": True,
+    }
+    with patch("bili_cli.commands.common.get_credential", return_value=mock_cred), \
+         patch("bili_cli.client.get_favorite_videos", new_callable=AsyncMock, return_value=data):
+        result = runner.invoke(cli, ["favorites", "100", "--page", "2"])
+        assert result.exit_code == 0
+        assert "BV1fav" in result.output
+        assert "favorites 100 --page 3" in result.output
+
+
 def test_favorites_requires_login(runner):
     with patch("bili_cli.commands.common.get_credential", return_value=None):
         result = runner.invoke(cli, ["favorites"])
@@ -366,6 +410,21 @@ def test_following_requires_login(runner):
         result = runner.invoke(cli, ["following"])
         assert result.exit_code != 0
         assert "需要登录" in result.output
+
+
+def test_following_success(runner):
+    mock_cred = MagicMock()
+    with patch("bili_cli.commands.common.get_credential", return_value=mock_cred), \
+         patch("bili_cli.client.get_self_info", new_callable=AsyncMock, return_value={"mid": 946974}), \
+         patch(
+             "bili_cli.client.get_followings",
+             new_callable=AsyncMock,
+             return_value={"list": [{"mid": 1, "uname": "UPA", "sign": "hello"}], "total": 1},
+         ):
+        result = runner.invoke(cli, ["following"])
+        assert result.exit_code == 0
+        assert "UPA" in result.output
+        assert "following --page 2" in result.output
 
 
 def test_following_invalid_page(runner):
@@ -424,6 +483,16 @@ def test_watch_later_requires_login(runner):
         assert "需要登录" in result.output
 
 
+def test_watch_later_success(runner):
+    mock_cred = MagicMock()
+    data = {"list": [{"bvid": "BV1later", "title": "Later", "owner": {"name": "UP"}, "duration": 60}], "count": 1}
+    with patch("bili_cli.commands.common.get_credential", return_value=mock_cred), \
+         patch("bili_cli.client.get_toview", new_callable=AsyncMock, return_value=data):
+        result = runner.invoke(cli, ["watch-later"])
+        assert result.exit_code == 0
+        assert "BV1later" in result.output
+
+
 def test_watch_later_api_error_returns_nonzero(runner):
     mock_cred = MagicMock()
     with patch("bili_cli.commands.common.get_credential", return_value=mock_cred), \
@@ -438,6 +507,29 @@ def test_feed_requires_login(runner):
         result = runner.invoke(cli, ["feed"])
         assert result.exit_code != 0
         assert "需要登录" in result.output
+
+
+def test_feed_success(runner):
+    mock_cred = MagicMock()
+    feed_data = {
+        "items": [
+            {
+                "modules": {
+                    "module_author": {"name": "UPA", "pub_time": "今天"},
+                    "module_dynamic": {"desc": {"text": "动态正文"}, "major": {"archive": {"title": "视频标题"}}},
+                    "module_stat": {"comment": {"count": 2}, "like": {"count": 3}},
+                }
+            }
+        ],
+        "next_offset": 12345,
+    }
+    with patch("bili_cli.commands.common.get_credential", return_value=mock_cred), \
+         patch("bili_cli.client.get_dynamic_feed", new_callable=AsyncMock, return_value=feed_data):
+        result = runner.invoke(cli, ["feed"])
+        assert result.exit_code == 0
+        assert "UPA" in result.output
+        assert "视频标题" in result.output
+        assert "bili feed --offset 12345" in result.output
 
 
 def test_feed_api_error_returns_nonzero(runner):

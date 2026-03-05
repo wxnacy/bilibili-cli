@@ -17,6 +17,8 @@ def login():
         common.run(common.qr_login())
     except RuntimeError as e:
         common.exit_error(str(e))
+    except Exception as e:
+        common.exit_error(f"登录失败: {e}")
 
 
 @click.command()

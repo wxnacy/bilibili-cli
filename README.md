@@ -25,6 +25,11 @@ pipx install bilibili-cli
 
 # Or: uv tool
 uv tool install bilibili-cli
+
+# If you need audio extraction support
+pipx install "bilibili-cli[audio]"
+# or
+uv tool install "bilibili-cli[audio]"
 ```
 
 Or from source:
@@ -107,6 +112,8 @@ Credentials are validated on use for authenticated commands. Expired cookies are
 
 Most commands work without login. Subtitles, favorites/following/watch-later/history, feed, and interactions require authentication.
 
+Audio extraction requires the optional `audio` dependency group (`av`).
+
 ## Use as AI Agent Skill
 
 bilibili-cli ships with a [`SKILL.md`](./SKILL.md) that teaches AI agents how to use it.
@@ -158,6 +165,11 @@ pipx install bilibili-cli
 
 # 或者：uv tool
 uv tool install bilibili-cli
+
+# 如果需要音频提取功能
+pipx install "bilibili-cli[audio]"
+# 或
+uv tool install "bilibili-cli[audio]"
 ```
 
 或从源码安装：
@@ -228,6 +240,8 @@ bilibili-cli 采用三级认证策略：
 需要认证的命令会自动校验凭证。过期 Cookie 会自动清除；如果只是临时网络异常，不会误清本地凭证（会以 best-effort 继续尝试）。
 
 大部分命令无需登录。字幕、收藏夹、动态和互动操作需要登录。
+
+音频提取功能需要安装可选依赖组 `audio`（即 `av`）。
 
 ## 作为 AI Agent Skill 使用
 

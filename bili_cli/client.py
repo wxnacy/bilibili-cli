@@ -364,9 +364,10 @@ async def get_video_comments(
         if isinstance(direct_result, dict):
             return direct_result
     except BiliError as exc:
-        if isinstance(sdk_result, dict):
-            logger.warning("Direct comment fallback failed, return SDK result: %s", exc)
+        if isinstance(sdk_result, dict) and sdk_result.get("replies"):
+            logger.warning("Direct comment fallback failed, return non-empty SDK result: %s", exc)
             return sdk_result
+        logger.warning("Direct comment fallback failed after SDK empty/error: %s", exc)
         raise
 
     if isinstance(sdk_result, dict):
