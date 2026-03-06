@@ -130,6 +130,9 @@ bilibili-cli ships with a [`SKILL.md`](./SKILL.md) that teaches AI agents how to
 ### Claude Code / Antigravity
 
 ```bash
+# Recommended: install the skill directly from GitHub
+npx skills add jackwener/bilibili-cli
+
 # Clone into your project's skills directory
 mkdir -p .agents/skills
 git clone git@github.com:jackwener/bilibili-cli.git .agents/skills/bilibili-cli
@@ -268,6 +271,9 @@ bilibili-cli 自带 [`SKILL.md`](./SKILL.md)，让 AI Agent 能自动学习并�
 ### Claude Code / Antigravity
 
 ```bash
+# 推荐：直接从 GitHub 安装 skill
+npx skills add jackwener/bilibili-cli
+
 # 克隆到项目的 skills 目录
 mkdir -p .agents/skills
 git clone git@github.com:jackwener/bilibili-cli.git .agents/skills/bilibili-cli

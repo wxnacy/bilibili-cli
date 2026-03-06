@@ -1,6 +1,14 @@
 ---
 name: bilibili-cli
-description: Browse Bilibili (B站) from the terminal — videos, users, search, trending, interactions
+description: CLI skill for Bilibili (哔哩哔哩, B站) to browse videos, users, search, trending, dynamics, favorites, and interactions from the terminal
+author: jackwener
+version: "1.0.0"
+tags:
+  - bilibili
+  - b站
+  - video
+  - social-media
+  - cli
 ---
 
 # bilibili-cli Skill
