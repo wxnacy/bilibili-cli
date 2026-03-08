@@ -12,7 +12,7 @@ from rich.console import Console
 from .. import auth
 from ..exceptions import BiliError, InvalidBvidError
 
-console = Console()
+console = Console(stderr=True)
 
 
 def setup_logging(verbose: bool):
