@@ -196,16 +196,23 @@ For agent usage, also prefer narrower queries (`--max`, `--page`, `--offset`) to
 
 When an AI agent is asked to summarize a video, it should fetch subtitles first. Subtitles usually contain the core content of the video and are the best primary source for summarization. Only fall back to AI summary, comments, or audio extraction when subtitles are unavailable or insufficient.
 
-### Claude Code / Antigravity
+### [Skills CLI](https://github.com/vercel-labs/skills) (Recommended)
 
 ```bash
-# Clone into your project's skills directory
+npx skills add jackwener/bilibili-cli
+```
+
+| Flag | Description |
+| --- | --- |
+| `-g` | Install globally (user-level, shared across projects) |
+| `-a claude-code` | Target a specific agent |
+| `-y` | Non-interactive mode |
+
+### Manual Install
+
+```bash
 mkdir -p .agents/skills
 git clone git@github.com:jackwener/bilibili-cli.git .agents/skills/bilibili-cli
-
-# Or just copy the SKILL.md
-curl -o .agents/skills/bilibili-cli/SKILL.md \
-  https://raw.githubusercontent.com/jackwener/bilibili-cli/main/SKILL.md
 ```
 
 Once added, AI agents that support the `.agents/skills/` convention will automatically discover and use bilibili-cli commands.
@@ -416,16 +423,23 @@ bili user-videos 946974 --max 3 --yaml
 
 bilibili-cli 自带 [`SKILL.md`](./SKILL.md)，让 AI Agent 能自动学习并使用本工具。
 
-### Claude Code / Antigravity
+### [Skills CLI](https://github.com/vercel-labs/skills)（推荐）
 
 ```bash
-# 克隆到项目的 skills 目录
+npx skills add jackwener/bilibili-cli
+```
+
+| 参数 | 说明 |
+| --- | --- |
+| `-g` | 全局安装（用户级别，跨项目共享） |
+| `-a claude-code` | 指定目标 Agent |
+| `-y` | 非交互模式 |
+
+### 手动安装
+
+```bash
 mkdir -p .agents/skills
 git clone git@github.com:jackwener/bilibili-cli.git .agents/skills/bilibili-cli
-
-# 或者只复制 SKILL.md
-curl -o .agents/skills/bilibili-cli/SKILL.md \
-  https://raw.githubusercontent.com/jackwener/bilibili-cli/main/SKILL.md
 ```
 
 添加后，支持 `.agents/skills/` 的 AI Agent 会自动发现并使用 bilibili-cli 命令。
